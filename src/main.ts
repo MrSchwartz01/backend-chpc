@@ -13,9 +13,8 @@ async function createApp() {
 
     // Habilitar CORS para red local y producción
     const corsOrigin = process.env.CORS_ORIGIN || process.env.NODE_ENV === 'production' 
-      ? ['https://your-frontend.vercel.app'] // Reemplaza con tu URL de frontend
-      : '*';
-    
+        ? ['frontend-liart-two-99.vercel.app'] // Reemplaza con tu URL de frontend
+        : '*';
     app.enableCors({
       origin: corsOrigin === '*' ? true : corsOrigin,
       credentials: true,
@@ -74,21 +73,20 @@ async function createApp() {
 
 async function bootstrap() {
   const app = await createApp();
-  
   const port = process.env.PORT || 5000;
   await app.listen(port, '0.0.0.0'); // Escuchar en todas las interfaces de red
-  
   // Solo mostrar información de red en desarrollo
   if (process.env.NODE_ENV !== 'production') {
     // Obtener la IP local
     const networkInterfaces = require('os').networkInterfaces();
-    const localIP = Object.values(networkInterfaces)
-      .flat()
+    const localIP =
+     Object.values(networkInterfaces)
+        .flat()
       .filter((iface): iface is { family: string; internal: boolean; address: string } => 
         iface !== null && iface !== undefined
-      )
+     )
       .find((iface) => iface.family === 'IPv4' && !iface.internal)?.address || 'localhost';
-    
+
     console.log(`\n🚀 Servidor ejecutándose en:`);
     console.log(`   - Local: http://localhost:${port}`);
     console.log(`   - Red Local: http://${localIP}:${port}`);
