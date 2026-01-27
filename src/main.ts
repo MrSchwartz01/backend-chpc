@@ -8,15 +8,32 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 let app;
 
 async function createApp() {
-  if (!app) {
+  if (!app) { 
     app = await NestFactory.create(AppModule);
 
     // Habilitar CORS para red local y producción
-    const corsOrigin = process.env.CORS_ORIGIN || process.env.NODE_ENV === 'production' 
-        ? ['frontend-liart-two-99.vercel.app'] // Reemplaza con tu URL de frontend
-        : '*';
+    const getCorsOrigins = () => {
+      if (process.env.NODE_ENV === 'production') {
+        // En producción, usar las URLs específicas del .env
+        const origins = process.env.CORS_ORIGIN?.split(',').map(url => url.trim()) || [];
+        return origins.length > 0 ? origins : false;
+      } else {
+        // En desarrollo, permitir localhost y las URLs del .env
+        const envOrigins = process.env.CORS_ORIGIN?.split(',').map(url => url.trim()) || [];
+        const devOrigins = [
+          'http://localhost:3000',
+          'http://localhost:8080', 
+          'http://localhost:5173', // Vite
+          'http://127.0.0.1:8080',
+          'http://127.0.0.1:3000',
+          'http://127.0.0.1:5173'
+        ];
+        return [...new Set([...envOrigins, ...devOrigins])];
+      }
+    };
+
     app.enableCors({
-      origin: corsOrigin === '*' ? true : corsOrigin,
+      origin: getCorsOrigins(),
       credentials: true,
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
       allowedHeaders: 'Content-Type, Accept, Authorization',
