@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule as NestConfigModule } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
-import { ConfigModule } from './common/config/config.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { BannersModule } from './banners/banners.module';
@@ -21,13 +20,11 @@ import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
-    // Configuración global de NestJS
-    NestConfigModule.forRoot({
+    // Configuración global
+    ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
     }),
-    // Configuración personalizada
-    ConfigModule,
     // Base de datos con Prisma
     PrismaModule,
     // Módulos de la aplicación
