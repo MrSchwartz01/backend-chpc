@@ -12,14 +12,40 @@ async function createApp() {
     app = await NestFactory.create(AppModule);
 
     // Habilitar CORS para red local y producción
-    const corsOrigin = process.env.CORS_ORIGIN || process.env.NODE_ENV === 'production' 
-        ? ['https://frontend-liart-two-99.vercel.app'] // Reemplaza con tu URL de frontend
-        : '*';
+    const getCorsOrigins = () => {
+      if (process.env.NODE_ENV === 'production') {
+        // En producción, usar las URLs específicas del .env
+        const origins = process.env.CORS_ORIGIN?.split(',').map(url => url.trim()) || [
+          'https://frontend-liart-two-99.vercel.app'
+        ];
+        return origins.length > 0 ? origins : false;
+      } else {
+        // En desarrollo, permitir localhost y las URLs del .env
+        const envOrigins = process.env.CORS_ORIGIN?.split(',').map(url => url.trim()) || [];
+        const devOrigins = [
+          'http://localhost:3000',
+          'http://localhost:8080', 
+          'http://localhost:5173', // Vite
+          'http://127.0.0.1:8080',
+          'http://127.0.0.1:3000',
+          'http://127.0.0.1:5173',
+          'https://frontend-liart-two-99.vercel.app' // También en desarrollo
+        ];
+        return [...new Set([...envOrigins, ...devOrigins])];
+      }
+    };
+
+    const corsOrigins = getCorsOrigins();
+    console.log('🔐 CORS Origins configuradas:', corsOrigins);
+
     app.enableCors({
-      origin: corsOrigin === '*' ? true : corsOrigin,
+      origin: corsOrigins,
       credentials: true,
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-      allowedHeaders: 'Content-Type, Accept, Authorization',
+      allowedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With',
+      exposedHeaders: 'Authorization',
+      preflightContinue: false,
+      optionsSuccessStatus: 204,
     });
 
     // Prefijo global de rutas
