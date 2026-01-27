@@ -34,7 +34,7 @@ async function createAdmin() {
   } catch (error) {
     if (error.code === 'P2002') {
       console.log('⚠️  El usuario "admin1" ya existe en la base de datos');
-      console.log('   Username: admin');
+      console.log('   Username: admin1');
       console.log('   Password: admin123 (si no has cambiado la contraseña)\n');
     } else {
       console.error('❌ Error al crear usuario administrador:', error.message);
