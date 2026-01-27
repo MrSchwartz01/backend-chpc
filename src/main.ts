@@ -13,7 +13,7 @@ async function createApp() {
 
     // Habilitar CORS para red local y producción
     const corsOrigin = process.env.CORS_ORIGIN || process.env.NODE_ENV === 'production' 
-        ? ['frontend-liart-two-99.vercel.app'] // Reemplaza con tu URL de frontend
+        ? ['https://frontend-liart-two-99.vercel.app'] // Reemplaza con tu URL de frontend
         : '*';
     app.enableCors({
       origin: corsOrigin === '*' ? true : corsOrigin,
@@ -104,9 +104,7 @@ async function bootstrap() {
 }
 
 // Para desarrollo local
-if (process.env.NODE_ENV !== 'production') {
-  bootstrap();
-}
+bootstrap();
 
 // Para Vercel serverless
 export default async (req, res) => {
