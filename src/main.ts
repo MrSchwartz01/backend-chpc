@@ -1,3 +1,4 @@
+// src/main.ts
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
@@ -5,141 +6,91 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
-let app;
-
-async function createApp() {
-  if (!app) {
-    app = await NestFactory.create(AppModule);
-
-    // Habilitar CORS para red local y producción
-    const getCorsOrigins = () => {
-      if (process.env.NODE_ENV === 'production') {
-        // En producción, usar las URLs específicas del .env
-        const origins = process.env.CORS_ORIGIN?.split(',').map(url => url.trim()) || [
-          'https://frontend-liart-two-99.vercel.app'
-        ];
-        return origins.length > 0 ? origins : false;
-      } else {
-        // En desarrollo, permitir localhost y las URLs del .env
-        const envOrigins = process.env.CORS_ORIGIN?.split(',').map(url => url.trim()) || [];
-        const devOrigins = [
-          'http://localhost:3000',
-          'http://localhost:8080', 
-          'http://localhost:5173', // Vite
-          'http://127.0.0.1:8080',
-          'http://127.0.0.1:3000',
-          'http://127.0.0.1:5173',
-          'https://frontend-liart-two-99.vercel.app' // También en desarrollo
-        ];
-        return [...new Set([...envOrigins, ...devOrigins])];
-      }
-    };
-
-    const corsOrigins = getCorsOrigins();
-    console.log('🔐 CORS Origins configuradas:', corsOrigins);
-
-    app.enableCors({
-      origin: corsOrigins,
-      credentials: true,
-      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-      allowedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With',
-      exposedHeaders: 'Authorization',
-      preflightContinue: false,
-      optionsSuccessStatus: 204,
-    });
-
-    // Prefijo global de rutas
-    app.setGlobalPrefix('api');
-
-    // Validación global de DTOs
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true, // Eliminar propiedades no definidas en el DTO
-        forbidNonWhitelisted: true, // Lanzar error si hay propiedades extra
-        transform: true, // Transformar tipos automáticamente
-        transformOptions: {
-          enableImplicitConversion: true,
-        },
-      }),
-    );
-
-    // Filtro global de excepciones
-    app.useGlobalFilters(new HttpExceptionFilter());
-
-    // Interceptor de logging
-    app.useGlobalInterceptors(new LoggingInterceptor());
-
-    // Configuración de Swagger (solo en desarrollo)
-    if (process.env.NODE_ENV !== 'production') {
-      const config = new DocumentBuilder()
-        .setTitle('CHPC API')
-        .setDescription('API de la tienda CHPC - Documentación completa de endpoints')
-        .setVersion('1.0')
-        .addBearerAuth(
-          {
-            type: 'http',
-            scheme: 'bearer',
-            bearerFormat: 'JWT',
-            name: 'JWT',
-            description: 'Ingrese su token JWT',
-            in: 'header',
-          },
-          'JWT-auth',
-        )
-        .build();
-
-      const document = SwaggerModule.createDocument(app, config);
-      SwaggerModule.setup('api/docs', app, document);
-    }
-
-    await app.init();
-  }
-  return app;
-}
-
 async function bootstrap() {
-  const app = await createApp();
-  const port = process.env.PORT || 5000;
-  await app.listen(port, '0.0.0.0'); // Escuchar en todas las interfaces de red
-  // Solo mostrar información de red en desarrollo
-  if (process.env.NODE_ENV !== 'production') {
-    // Obtener la IP local
-    const networkInterfaces = require('os').networkInterfaces();
-    const localIP =
-     Object.values(networkInterfaces)
-        .flat()
-      .filter((iface): iface is { family: string; internal: boolean; address: string } => 
-        iface !== null && iface !== undefined
-     )
-      .find((iface) => iface.family === 'IPv4' && !iface.internal)?.address || 'localhost';
+  const app = await NestFactory.create(AppModule);
 
-    console.log(`\n🚀 Servidor ejecutándose en:`);
-    console.log(`   - Local: http://localhost:${port}`);
-    console.log(`   - Red Local: http://${localIP}:${port}`);
-    console.log(`\n📚 API disponible en:`);
-    console.log(`   - Local: http://localhost:${port}/api`);
-    console.log(`   - Red Local: http://${localIP}:${port}/api`);
-    console.log(`\n📖 Documentación Swagger:`);
-    console.log(`   - http://${localIP}:${port}/api/docs`);
-    console.log(`\n🔐 Endpoints de autenticación:`);
-    console.log(`   - POST http://${localIP}:${port}/api/auth/registro`);
-    console.log(`   - POST http://${localIP}:${port}/api/auth/login`);
-    console.log(`   - POST http://${localIP}:${port}/api/auth/refresh`);
-    console.log(`   - GET  http://${localIP}:${port}/api/auth/verificar\n`);
+  // 🔧 CONFIGURACIÓN CORS SIMPLIFICADA Y EFECTIVA
+  app.enableCors({
+    origin: [
+      'https://frontend-liart-two-99.vercel.app', // Tu frontend en producción
+      'http://localhost:3000', // Desarrollo local
+      'http://localhost:5173', // Vite dev server
+      'https://studio.apollographql.com', // Para Apollo Studio si usas GraphQL
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: [
+      'Origin',
+      'Content-Type',
+      'Accept',
+      'Authorization',
+      'X-Requested-With',
+      'X-API-Key',
+    ],
+    exposedHeaders: ['Authorization'],
+    maxAge: 86400, // Cache de preflight por 24 horas
+  });
+
+  // Prefijo global de rutas
+  app.setGlobalPrefix('api');
+
+  // Validación global de DTOs
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
+
+  // Filtro global de excepciones
+  app.useGlobalFilters(new HttpExceptionFilter());
+
+  // Interceptor de logging
+  app.useGlobalInterceptors(new LoggingInterceptor());
+
+  // Configuración de Swagger (solo en desarrollo)
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('CHPC API')
+      .setDescription(
+        'API de la tienda CHPC - Documentación completa de endpoints',
+      )
+      .setVersion('1.0')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          name: 'JWT',
+          description: 'Ingrese su token JWT',
+          in: 'header',
+        },
+        'JWT-auth',
+      )
+      .build();
+
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
+  }
+
+  const port = process.env.PORT || 5000;
+
+  await app.listen(port, '0.0.0.0');
+
+  console.log(`🚀 Servidor ejecutándose en puerto: ${port}`);
+  console.log(`🌐 CORS habilitado para:`);
+  console.log(`   - https://frontend-liart-two-99.vercel.app`);
+  console.log(`   - http://localhost:3000`);
+  console.log(`   - http://localhost:5173`);
+  console.log(`\n📚 API disponible en: http://localhost:${port}/api`);
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`📖 Swagger: http://localhost:${port}/api/docs`);
   }
 }
 
-// Para desarrollo local
 bootstrap();
-
-// Para Vercel serverless
-export default async (req, res) => {
-  const app = await createApp();
-  await app.getHttpAdapter().getInstance()(req, res);
-};
-
-// También exportar para compatibilidad
-module.exports = async (req, res) => {
-  const app = await createApp();
-  await app.getHttpAdapter().getInstance()(req, res);
-};
