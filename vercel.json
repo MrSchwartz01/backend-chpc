@@ -1,7 +1,9 @@
 {
   "functions": {
     "api/index.ts": {
-      "maxDuration": 60
+      "maxDuration": 60,
+      "memory": 512,
+      "runtime": "nodejs20.x"
     }
   },
   "rewrites": [
@@ -9,5 +11,8 @@
       "source": "/(.*)",
       "destination": "/api/index.ts"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
