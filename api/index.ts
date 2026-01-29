@@ -1,8 +1,9 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, INestApplication } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { ExpressAdapter, NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import express, { Request, Response } from 'express';
+import express from 'express';
+import { Request, Response } from 'express';
 
 // Importaciones directas para que funcione en build
 import { AppModule } from '../src/app.module';
