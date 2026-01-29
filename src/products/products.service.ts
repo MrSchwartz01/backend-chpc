@@ -44,11 +44,15 @@ export class ProductsService {
   }
 
   async findAll(filters: FilterProductsDto): Promise<Product[]> {
-    const { minPrice, maxPrice, marca, color, categoria, subcategoria, destacado, search, priceRange } = filters;
+    try {
+      console.log('=== PRODUCTS findAll - START ===');
+      console.log('Filters:', JSON.stringify(filters));
+      
+      const { minPrice, maxPrice, marca, color, categoria, subcategoria, destacado, search, priceRange } = filters;
 
-    const where: Prisma.ProductWhereInput = {
-      activo: true, // Solo mostrar productos activos
-    };
+      const where: Prisma.ProductWhereInput = {
+        activo: true, // Solo mostrar productos activos
+      };
 
     // Determinar rango de precio según priceRange o min/max explícitos
     let effectiveMin = minPrice;
@@ -145,6 +149,8 @@ export class ProductsService {
       ];
     }
 
+    console.log('WHERE clause:', JSON.stringify(where));
+
     const productos = await this.prisma.product.findMany({ 
       where,
       orderBy: [
@@ -161,7 +167,17 @@ export class ProductsService {
       },
     });
 
-    return this.addImagenUrl(productos);
+    console.log(`Found ${productos.length} products`);
+    const result = this.addImagenUrl(productos);
+    console.log('=== PRODUCTS findAll - END ===');
+    return result;
+    
+    } catch (error) {
+      console.error('=== ERROR in findAll ===');
+      console.error('Error details:', error);
+      console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
+      throw new Error(`Error al obtener productos: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+    }
   }
 
   async findOne(id: number): Promise<Product | null> {

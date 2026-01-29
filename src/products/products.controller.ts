@@ -20,7 +20,17 @@ export class ProductsController {
 
   @Get()
   async findAll(@Query() filters: FilterProductsDto) {
-    return await this.productsService.findAll(filters);
+    try {
+      console.log('=== PRODUCTS CONTROLLER - findAll ===');
+      console.log('Received filters:', JSON.stringify(filters));
+      const result = await this.productsService.findAll(filters);
+      console.log('Controller result length:', result.length);
+      return result;
+    } catch (error) {
+      console.error('=== CONTROLLER ERROR ===');
+      console.error('Error in controller:', error);
+      throw error;
+    }
   }
 
   @Get(':id')
