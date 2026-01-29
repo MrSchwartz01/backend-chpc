@@ -1,13 +1,15 @@
-# 🚀 Guía de Deployment en Vercel
+# 🚀 Guía de Deployment en Vercel - ACTUALIZADA
 
 ## Preparación Completa ✅
 
-Tu proyecto ya está configurado para Vercel con:
+Tu proyecto ahora está correctamente configurado para Vercel con:
 
-- ✅ `vercel.json` optimizado para serverless
-- ✅ `main.ts` adaptado para funciones serverless
-- ✅ Script `vercel-build` configurado
+- ✅ `vercel.json` creado y optimizado para serverless
+- ✅ `api/index.ts` corregido para funciones serverless  
+- ✅ Script `vercel-build` mejorado con construcción de la aplicación
 - ✅ Variables de entorno preparadas
+- ✅ `.vercelignore` para optimizar el build
+- ✅ Configuración de rutas corregida para evitar errores 404
 
 ## 📝 Pasos para Deploy
 
@@ -41,6 +43,8 @@ NODE_ENV = production
 CORS_ORIGIN = https://tu-frontend.vercel.app
 ```
 
+**IMPORTANTE**: Asegúrate de que `NODE_ENV=production` esté configurado para evitar que Swagger se ejecute en producción.
+
 ### 📊 Base de Datos
 
 **Opción 1: Vercel Postgres (Recomendado)**
@@ -70,6 +74,11 @@ const API_URL = 'https://tu-proyecto-backend.vercel.app/api'
 
 ## 🐛 Troubleshooting
 
+### Error 404 en rutas (SOLUCIONADO)
+- ✅ Configuración de `vercel.json` corregida
+- ✅ Manejo de rutas optimizado en `api/index.ts`
+- ✅ Todas las rutas ahora apuntan correctamente al handler principal
+
 ### Error de CORS
 - Actualizar CORS_ORIGIN con la URL exacta de tu frontend
 - Verificar que coincida exactamente (https vs http)
@@ -79,8 +88,13 @@ const API_URL = 'https://tu-proyecto-backend.vercel.app/api'
 - Ejecutar migraciones: `npx prisma db push`
 
 ### Error de Build
-- Verificar que todas las dependencias estén en package.json
+- ✅ Script `vercel-build` ahora incluye construcción completa
+- ✅ `.vercelignore` optimiza archivos incluidos
 - Revisar logs de build en el dashboard de Vercel
+
+### Documentación Swagger en producción
+- ✅ Swagger deshabilitado automáticamente en producción
+- Solo disponible en desarrollo local
 
 ## 💡 Tips
 
