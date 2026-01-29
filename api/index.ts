@@ -4,21 +4,10 @@ import { ExpressAdapter, NestExpressApplication } from '@nestjs/platform-express
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import express, { Request, Response } from 'express';
 
-// Importar dinámicamente el módulo de la aplicación
-const getAppModule = async () => {
-  const { AppModule } = await import('../src/app.module');
-  return AppModule;
-};
-
-const getFilters = async () => {
-  const { HttpExceptionFilter } = await import('../src/common/filters/http-exception.filter');
-  return { HttpExceptionFilter };
-};
-
-const getInterceptors = async () => {
-  const { LoggingInterceptor } = await import('../src/common/interceptors/logging.interceptor');
-  return { LoggingInterceptor };
-};
+// Importaciones directas para que funcione en build
+import { AppModule } from '../src/app.module';
+import { HttpExceptionFilter } from '../src/common/filters/http-exception.filter';
+import { LoggingInterceptor } from '../src/common/interceptors/logging.interceptor';
 
 const expressApp = express();
 let cachedApp: NestExpressApplication;
@@ -27,10 +16,6 @@ async function bootstrap(): Promise<NestExpressApplication> {
   if (cachedApp) {
     return cachedApp;
   }
-
-  const AppModule = await getAppModule();
-  const { HttpExceptionFilter } = await getFilters();
-  const { LoggingInterceptor } = await getInterceptors();
 
   const app = await NestFactory.create<NestExpressApplication>(
     AppModule,
