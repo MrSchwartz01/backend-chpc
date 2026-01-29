@@ -32,7 +32,7 @@ interface AuthRequest extends ExpressRequest {
   };
 }
 
-@Controller('api/usuarios')
+@Controller('usuarios')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
