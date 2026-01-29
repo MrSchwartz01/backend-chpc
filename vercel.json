@@ -6,11 +6,15 @@
   },
   "rewrites": [
     {
+      "source": "/tienda/(.*)",
+      "destination": "/api/tienda/$1"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api"
     },
     {
-      "source": "/((?!api).*)",
+      "source": "/((?!api|tienda).*)",
       "destination": "/api"
     }
   ]
