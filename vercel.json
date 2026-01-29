@@ -6,16 +6,8 @@
   },
   "rewrites": [
     {
-      "source": "/tienda/(.*)",
-      "destination": "/api/tienda/$1"
-    },
-    {
-      "source": "/api/(.*)",
-      "destination": "/api"
-    },
-    {
-      "source": "/((?!api|tienda).*)",
-      "destination": "/api"
+      "source": "/(.*)",
+      "destination": "/api/index.ts"
     }
   ]
 }

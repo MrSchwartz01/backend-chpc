@@ -12,12 +12,28 @@ export class AppController {
       version: '1.0.0',
       timestamp: new Date().toISOString(),
       endpoints: {
-        api: '/api',
-        docs: '/api/docs (solo en desarrollo)',
         auth: '/api/auth',
-        products: '/api/products',
-        users: '/api/users',
-        orders: '/api/orders',
+        products: '/tienda/productos',
+        banners: '/tienda/banners',
+        users: '/api/usuarios',
+        orders: '/api/ordenes',
+        images: '/api/images'
+      }
+    };
+  }
+
+  @Get('api')
+  getApiInfo(): any {
+    return {
+      message: 'CHPC API - Backend funcionando correctamente',
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+      endpoints: {
+        auth: '/api/auth',
+        products: '/tienda/productos',
+        banners: '/tienda/banners',
+        users: '/api/usuarios',
+        orders: '/api/ordenes',
         images: '/api/images'
       }
     };

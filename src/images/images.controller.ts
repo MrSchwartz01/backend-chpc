@@ -23,7 +23,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/roles.enum';
 
-@Controller('images')
+@Controller('api/images')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ImagesController {
   constructor(

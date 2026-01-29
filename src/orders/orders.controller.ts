@@ -29,7 +29,7 @@ interface AuthRequest extends ExpressRequest {
   };
 }
 
-@Controller('ordenes')
+@Controller('api/ordenes')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
