@@ -12,12 +12,12 @@ export class AppController {
       version: '1.0.0',
       timestamp: new Date().toISOString(),
       endpoints: {
-        auth: '/api/auth',
+        auth: '/auth',
         products: '/tienda/productos',
         banners: '/tienda/banners',
         users: '/api/usuarios',
         orders: '/api/ordenes',
-        images: '/api/images'
+        images: '/images'
       }
     };
   }
@@ -29,12 +29,12 @@ export class AppController {
       version: '1.0.0',
       timestamp: new Date().toISOString(),
       endpoints: {
-        auth: '/api/auth',
+        auth: '/auth',
         products: '/tienda/productos',
         banners: '/tienda/banners',
         users: '/api/usuarios',
         orders: '/api/ordenes',
-        images: '/api/images'
+        images: '/images'
       }
     };
   }
