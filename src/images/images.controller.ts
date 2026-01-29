@@ -13,6 +13,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import type { MulterFile } from '../types/multer.types';
 import { ImagesService } from './images.service';
 import { ImageOptimizationService } from './image-optimization.service';
 import { CreateImageDto } from './dto/create-image.dto';
@@ -54,7 +55,7 @@ export class ImagesController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadImage(
     @Param('productId', ParseIntPipe) productId: number,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: MulterFile,
     @Body('es_principal') esPrincipal?: string,
     @Body('orden') orden?: string,
   ) {
@@ -107,7 +108,7 @@ export class ImagesController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadImageOptimized(
     @Param('productId', ParseIntPipe) productId: number,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: MulterFile,
     @Body('es_principal') esPrincipal?: string,
     @Body('orden') orden?: string,
     @Body('maxWidth') maxWidth?: string,

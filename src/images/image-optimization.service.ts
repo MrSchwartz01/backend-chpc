@@ -2,6 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import sharp from 'sharp';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import type { MulterFile } from '../types/multer.types';
 
 @Injectable()
 export class ImageOptimizationService {
@@ -22,7 +23,7 @@ export class ImageOptimizationService {
    * @returns Nombre del archivo WebP generado
    */
   async convertToWebp(
-    file: Express.Multer.File,
+    file: MulterFile,
     productId: number,
   ): Promise<string> {
     try {
@@ -89,7 +90,7 @@ export class ImageOptimizationService {
    * @returns Nombre del archivo WebP generado
    */
   async convertToWebpCustom(
-    file: Express.Multer.File,
+    file: MulterFile,
     productId: number,
     maxWidth: number = 1200,
     maxHeight: number = 1200,
@@ -148,7 +149,7 @@ export class ImageOptimizationService {
    * @returns Objeto con rutas de las diferentes versiones
    */
   async createMultipleVersions(
-    file: Express.Multer.File,
+    file: MulterFile,
     productId: number,
   ): Promise<{
     thumbnail: string;
@@ -227,7 +228,7 @@ export class ImageOptimizationService {
   /**
    * Obtener metadata de una imagen
    */
-  async getImageMetadata(file: Express.Multer.File): Promise<sharp.Metadata> {
+  async getImageMetadata(file: MulterFile): Promise<sharp.Metadata> {
     try {
       return await sharp(file.buffer).metadata();
     } catch (error) {

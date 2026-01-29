@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateImageDto } from './dto/create-image.dto';
 import { UpdateImageDto } from './dto/update-image.dto';
+import type { MulterFile } from '../types/multer.types';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -175,7 +176,7 @@ export class ImagesService {
   /**
    * Guardar archivo subido
    */
-  async saveUploadedFile(file: Express.Multer.File, productId: number) {
+  async saveUploadedFile(file: MulterFile, productId: number) {
     try {
       console.log('=== DEBUG UPLOAD ===');
       console.log('uploadDir:', this.uploadDir);
