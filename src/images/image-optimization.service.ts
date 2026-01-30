@@ -32,8 +32,19 @@ export class ImageOptimizationService {
       console.log('Tipo MIME:', file.mimetype);
       console.log('Tamaño original:', this.formatBytes(file.size));
 
+      // Validar que el buffer existe
+      if (!file.buffer || file.buffer.length === 0) {
+        throw new BadRequestException('El buffer de la imagen está vacío');
+      }
+
       // Asegurar que el directorio existe
-      await fs.mkdir(this.uploadDir, { recursive: true });
+      try {
+        await fs.mkdir(this.uploadDir, { recursive: true });
+        console.log('✅ Directorio de subida verificado:', this.uploadDir);
+      } catch (dirError) {
+        console.error('❌ Error creando directorio:', dirError);
+        throw new BadRequestException('Error preparando directorio de imágenes');
+      }
 
       // Generar nombre único con extensión .webp
       const timestamp = Date.now();
@@ -45,20 +56,37 @@ export class ImageOptimizationService {
       const fileName = `producto-${productId}-${safeFileName}-${timestamp}.webp`;
       const filePath = path.join(this.uploadDir, fileName);
 
+      console.log('Procesando imagen con sharp...');
+      console.log('Archivo destino:', fileName);
+
       // Procesar imagen con sharp
-      const imageBuffer = await sharp(file.buffer)
-        .resize(1200, 1200, {
-          fit: 'inside', // Mantener proporción, no exceder dimensiones
-          withoutEnlargement: true, // No agrandar imágenes pequeñas
-        })
-        .webp({
-          quality: 85, // Calidad óptima (0-100)
-          effort: 4, // Esfuerzo de compresión (0-6, mayor = mejor compresión pero más lento)
-        })
-        .toBuffer();
+      let imageBuffer: Buffer;
+      try {
+        imageBuffer = await sharp(file.buffer)
+          .resize(1200, 1200, {
+            fit: 'inside', // Mantener proporción, no exceder dimensiones
+            withoutEnlargement: true, // No agrandar imágenes pequeñas
+          })
+          .webp({
+            quality: 85, // Calidad óptima (0-100)
+            effort: 4, // Esfuerzo de compresión (0-6, mayor = mejor compresión pero más lento)
+          })
+          .toBuffer();
+      } catch (sharpError) {
+        console.error('❌ Error procesando imagen con Sharp:', sharpError);
+        throw new BadRequestException(
+          `Error procesando imagen: ${sharpError instanceof Error ? sharpError.message : 'Error de Sharp'}`
+        );
+      }
 
       // Guardar archivo WebP
-      await fs.writeFile(filePath, imageBuffer);
+      try {
+        await fs.writeFile(filePath, imageBuffer);
+        console.log('✅ Archivo guardado en:', filePath);
+      } catch (writeError) {
+        console.error('❌ Error escribiendo archivo:', writeError);
+        throw new BadRequestException('Error guardando imagen optimizada');
+      }
 
       const savedSize = imageBuffer.length;
       const compressionRatio = ((1 - savedSize / file.size) * 100).toFixed(2);
@@ -73,6 +101,11 @@ export class ImageOptimizationService {
       return `/Productos/${fileName}`;
     } catch (error) {
       console.error('ERROR en optimización de imagen:', error);
+      
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
       throw new BadRequestException(
         `Error al optimizar imagen: ${errorMessage}`,

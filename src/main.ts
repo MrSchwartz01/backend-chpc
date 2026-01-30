@@ -41,7 +41,22 @@ async function createApp(): Promise<NestExpressApplication> {
     origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'X-Requested-With'],
+    allowedHeaders: [
+      'Content-Type', 
+      'Accept', 
+      'Authorization', 
+      'X-Requested-With',
+      'Access-Control-Allow-Headers',
+      'Origin',
+      'X-Requested-With',
+      'Accept',
+      'Content-Type',
+      'Access-Control-Request-Method',
+      'Access-Control-Request-Headers'
+    ],
+    exposedHeaders: ['Content-Length', 'Content-Type'],
+    optionsSuccessStatus: 200,
+    preflightContinue: false,
   });
 
   // Prefijo global de rutas
