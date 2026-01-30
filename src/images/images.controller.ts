@@ -24,7 +24,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/roles.enum';
 
 @Controller('images')
-// @UseGuards(JwtAuthGuard, RolesGuard) // Temporalmente deshabilitado para testing
+@UseGuards(JwtAuthGuard, RolesGuard) // Autenticación restaurada para producción
 export class ImagesController {
   constructor(
     private readonly imagesService: ImagesService,
@@ -75,7 +75,7 @@ export class ImagesController {
    * Subir y crear nueva imagen para un producto
    */
   @Post('upload/:productId')
-  @Roles(Role.ADMIN, Role.VENDEDOR)
+  @Roles(Role.ADMIN, Role.VENDEDOR) // Roles restaurados
   @UseInterceptors(FileInterceptor('file'))
   async uploadImage(
     @Param('productId', ParseIntPipe) productId: number,
