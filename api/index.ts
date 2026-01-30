@@ -49,8 +49,8 @@ async function bootstrap(): Promise<NestExpressApplication> {
     allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'X-Requested-With'],
   });
 
-  // No usar prefijo global para permitir rutas flexibles
-  // app.setGlobalPrefix('api');
+  // Prefijo global de rutas (DEBE coincidir con main.ts)
+  app.setGlobalPrefix('api');
 
   app.useGlobalPipes(
     new ValidationPipe({
