@@ -40,6 +40,30 @@ export class ImagesController {
   }
 
   /**
+   * Endpoint de testing para subida de imágenes (SIN AUTENTICACIÓN)
+   * Solo para debugging - REMOVER EN PRODUCCIÓN
+   */
+  @Get('test-upload-info')
+  async testUploadInfo() {
+    return {
+      message: 'Endpoint de test para subida de imágenes',
+      instructions: {
+        method: 'POST',
+        url: '/api/images/test-upload/:productId',
+        example: '/api/images/test-upload/1',
+        contentType: 'multipart/form-data',
+        fields: {
+          file: 'archivo de imagen (requerido)',
+          es_principal: 'true/false (opcional)',
+          orden: 'número (opcional)'
+        }
+      },
+      allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'],
+      maxSize: '10MB'
+    };
+  }
+
+  /**
    * Obtener una imagen por ID
    */
   @Get(':id')
@@ -185,30 +209,6 @@ export class ImagesController {
       console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack');
       throw error;
     }
-  }
-
-  /**
-   * Endpoint de testing para subida de imágenes (SIN AUTENTICACIÓN)
-   * Solo para debugging - REMOVER EN PRODUCCIÓN
-   */
-  @Get('test-upload-info')
-  async testUploadInfo() {
-    return {
-      message: 'Endpoint de test para subida de imágenes',
-      instructions: {
-        method: 'POST',
-        url: '/api/images/test-upload/:productId',
-        example: '/api/images/test-upload/1',
-        contentType: 'multipart/form-data',
-        fields: {
-          file: 'archivo de imagen (requerido)',
-          es_principal: 'true/false (opcional)',
-          orden: 'número (opcional)'
-        }
-      },
-      allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'],
-      maxSize: '10MB'
-    };
   }
 
   /**
