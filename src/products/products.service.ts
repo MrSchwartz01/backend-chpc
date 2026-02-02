@@ -58,6 +58,13 @@ export class ProductsService {
           { existenciaTotal: '' },
           { existenciaTotal: null },
         ],
+        // Filtrar productos que tengan precio > 0
+        // Solo mostrar productos que tengan precioUnitario con precioA mayor a 0
+        precioUnitario: {
+          precioA: {
+            gt: 0,
+          },
+        },
       };
 
       // Filtro por rango de costo
