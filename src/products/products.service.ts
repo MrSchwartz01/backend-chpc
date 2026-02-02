@@ -10,11 +10,11 @@ export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
   /**
-   * Helper para agregar imagen_url a los productos desde productImages
+   * Helper para agregar imagen_url y precioA a los productos
    */
-  private addImagenUrl(productos: any[]): any[] {
+  private addImagenUrlAndPrecio(productos: any[]): any[] {
     return productos.map(producto => {
-      let imagen_url = '/Productos/placeholder-product.png';
+      let imagen_url = '/placeholder.jpg';
       
       if (producto.productImages && producto.productImages.length > 0) {
         // Buscar imagen principal o usar la primera
@@ -24,9 +24,15 @@ export class ProductsService {
           : producto.productImages[0].ruta_imagen;
       }
       
+      // Obtener precioA de la relación precioUnitario
+      const precioA = producto.precioUnitario?.precioA ?? null;
+      
       return {
         ...producto,
         imagen_url,
+        precioA,
+        // Mantener costoTotal como respaldo si no hay precioA
+        costoTotal: precioA ?? producto.costoTotal,
       };
     });
   }
@@ -37,14 +43,22 @@ export class ProductsService {
     });
   }
 
-  async findAll(filters: FilterProductsDto): Promise<Product[]> {
+  async findAll(filters: FilterProductsDto): Promise<{ data: Product[]; total: number; page: number; limit: number; totalPages: number }> {
     try {
       console.log('=== PRODUCTS findAll - START ===');
       console.log('Filters:', JSON.stringify(filters));
       
-      const { minCosto, maxCosto, marca, almacen, search } = filters;
+      const { minCosto, maxCosto, marca, almacen, search, page = 1, limit } = filters;
 
-      const where: Prisma.ProductWhereInput = {};
+      const where: Prisma.ProductWhereInput = {
+        // Filtrar productos que tengan stock > 0
+        // existenciaTotal es string, así que filtramos los que NO sean "0" ni vacíos ni null
+        NOT: [
+          { existenciaTotal: '0' },
+          { existenciaTotal: '' },
+          { existenciaTotal: null },
+        ],
+      };
 
       // Filtro por rango de costo
       if (minCosto !== undefined || maxCosto !== undefined) {
@@ -97,12 +111,25 @@ export class ProductsService {
               mode: 'insensitive',
             },
           },
-        ];
+          {
+            codigo: !isNaN(Number(search)) ? Number(search) : undefined,
+          },
+        ].filter(condition => {
+          // Filtrar condiciones con undefined
+          if ('codigo' in condition && condition.codigo === undefined) {
+            return false;
+          }
+          return true;
+        });
       }
 
       console.log('WHERE clause:', JSON.stringify(where));
 
-      const productos = await this.prisma.product.findMany({ 
+      // Contar total de productos
+      const total = await this.prisma.product.count({ where });
+
+      // Si no hay limit, devolver todos los productos (para compatibilidad)
+      const queryOptions: any = {
         where,
         orderBy: [
           { codigo: 'asc' },
@@ -114,13 +141,31 @@ export class ProductsService {
               { orden: 'asc' },
             ],
           },
+          precioUnitario: true, // Incluir precio unitario para obtener precioA
         },
-      });
+      };
 
-      console.log(`Found ${productos.length} products`);
-      const result = this.addImagenUrl(productos);
+      // Aplicar paginación solo si se especifica limit
+      if (limit) {
+        queryOptions.skip = (page - 1) * limit;
+        queryOptions.take = limit;
+      }
+
+      const productos = await this.prisma.product.findMany(queryOptions);
+
+      console.log(`Found ${productos.length} products (total: ${total})`);
+      const result = this.addImagenUrlAndPrecio(productos);
       console.log('=== PRODUCTS findAll - END ===');
-      return result;
+      
+      const totalPages = limit ? Math.ceil(total / limit) : 1;
+      
+      return {
+        data: result,
+        total,
+        page: Number(page),
+        limit: limit || total,
+        totalPages,
+      };
     
     } catch (error) {
       console.error('=== ERROR in findAll ===');
@@ -142,13 +187,14 @@ export class ProductsService {
             { orden: 'asc' },
           ],
         },
+        precioUnitario: true, // Incluir precio unitario para obtener precioA
       },
     });
 
     if (!producto) return null;
 
-    // Agregar imagen_url
-    const productosConImagen = this.addImagenUrl([producto]);
+    // Agregar imagen_url y precioA
+    const productosConImagen = this.addImagenUrlAndPrecio([producto]);
     return productosConImagen[0];
   }
 

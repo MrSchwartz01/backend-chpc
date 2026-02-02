@@ -24,7 +24,7 @@ export class ProductsController {
       console.log('=== PRODUCTS CONTROLLER - findAll ===');
       console.log('Received filters:', JSON.stringify(filters));
       const result = await this.productsService.findAll(filters);
-      console.log('Controller result length:', result.length);
+      console.log('Controller result count:', result.data.length, 'of', result.total);
       return result;
     } catch (error) {
       console.error('=== CONTROLLER ERROR ===');
