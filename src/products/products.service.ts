@@ -10,7 +10,7 @@ export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
   /**
-   * Helper para agregar imagen_url a los productos
+   * Helper para agregar imagen_url a los productos desde productImages
    */
   private addImagenUrl(productos: any[]): any[] {
     return productos.map(producto => {
@@ -32,14 +32,8 @@ export class ProductsService {
   }
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
-    // Si no se proporciona imagen_url, usar una por defecto
-    const data = {
-      ...createProductDto,
-      imagen_url: createProductDto.imagen_url || '/Productos/placeholder-product.png'
-    };
-    
     return this.prisma.product.create({
-      data,
+      data: createProductDto,
     });
   }
 
@@ -48,129 +42,85 @@ export class ProductsService {
       console.log('=== PRODUCTS findAll - START ===');
       console.log('Filters:', JSON.stringify(filters));
       
-      const { minPrice, maxPrice, marca, color, categoria, subcategoria, destacado, search, priceRange } = filters;
+      const { minCosto, maxCosto, marca, almacen, search } = filters;
 
-      const where: Prisma.ProductWhereInput = {
-        activo: true, // Solo mostrar productos activos
-      };
+      const where: Prisma.ProductWhereInput = {};
 
-    // Determinar rango de precio según priceRange o min/max explícitos
-    let effectiveMin = minPrice;
-    let effectiveMax = maxPrice;
-
-    if (priceRange === 'low') {
-      // Menor a 100
-      effectiveMin = undefined;
-      effectiveMax = 100;
-    } else if (priceRange === 'mid') {
-      // De 101 a 399
-      effectiveMin = 101;
-      effectiveMax = 399;
-    } else if (priceRange === 'high') {
-      // Desde 400 en adelante
-      effectiveMin = 400;
-      effectiveMax = undefined;
-    }
-
-    if (effectiveMin !== undefined || effectiveMax !== undefined) {
-      where.precio = {};
-      if (effectiveMin !== undefined) {
-        where.precio.gte = effectiveMin;
+      // Filtro por rango de costo
+      if (minCosto !== undefined || maxCosto !== undefined) {
+        where.costoTotal = {};
+        if (minCosto !== undefined) {
+          where.costoTotal.gte = minCosto;
+        }
+        if (maxCosto !== undefined) {
+          where.costoTotal.lte = maxCosto;
+        }
       }
-      if (effectiveMax !== undefined) {
-        where.precio.lte = effectiveMax;
+
+      if (marca) {
+        where.marca = {
+          contains: marca,
+          mode: 'insensitive',
+        };
       }
-    }
 
-    if (marca) {
-      where.marca = {
-        contains: marca,
-        mode: 'insensitive',
-      };
-    }
+      if (almacen) {
+        where.almacen = {
+          contains: almacen,
+          mode: 'insensitive',
+        };
+      }
 
-    if (color) {
-      where.color = {
-        contains: color,
-        mode: 'insensitive',
-      };
-    }
+      if (search) {
+        where.OR = [
+          {
+            producto: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            marca: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            medida: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            almacen: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+        ];
+      }
 
-    if (categoria) {
-      where.categoria = {
-        contains: categoria,
-        mode: 'insensitive',
-      };
-    }
+      console.log('WHERE clause:', JSON.stringify(where));
 
-    if (subcategoria) {
-      where.subcategoria = {
-        contains: subcategoria,
-        mode: 'insensitive',
-      };
-    }
-
-    if (destacado !== undefined) {
-      where.destacado = destacado;
-    }
-
-    if (search) {
-      where.OR = [
-        {
-          nombre_producto: {
-            contains: search,
-            mode: 'insensitive',
+      const productos = await this.prisma.product.findMany({ 
+        where,
+        orderBy: [
+          { codigo: 'asc' },
+        ],
+        include: {
+          productImages: {
+            orderBy: [
+              { es_principal: 'desc' },
+              { orden: 'asc' },
+            ],
           },
         },
-        {
-          descripcion: {
-            contains: search,
-            mode: 'insensitive',
-          },
-        },
-        {
-          marca: {
-            contains: search,
-            mode: 'insensitive',
-          },
-        },
-        {
-          categoria: {
-            contains: search,
-            mode: 'insensitive',
-          },
-        },
-        {
-          modelo: {
-            contains: search,
-            mode: 'insensitive',
-          },
-        },
-      ];
-    }
+      });
 
-    console.log('WHERE clause:', JSON.stringify(where));
-
-    const productos = await this.prisma.product.findMany({ 
-      where,
-      orderBy: [
-        { destacado: 'desc' }, // Productos destacados primero
-        { fecha_creacion: 'desc' }, // Luego por fecha de creación
-      ],
-      include: {
-        productImages: {
-          orderBy: [
-            { es_principal: 'desc' },
-            { orden: 'asc' },
-          ],
-        },
-      },
-    });
-
-    console.log(`Found ${productos.length} products`);
-    const result = this.addImagenUrl(productos);
-    console.log('=== PRODUCTS findAll - END ===');
-    return result;
+      console.log(`Found ${productos.length} products`);
+      const result = this.addImagenUrl(productos);
+      console.log('=== PRODUCTS findAll - END ===');
+      return result;
     
     } catch (error) {
       console.error('=== ERROR in findAll ===');
@@ -180,10 +130,10 @@ export class ProductsService {
     }
   }
 
-  async findOne(id: number): Promise<Product | null> {
+  async findOne(codigo: number): Promise<Product | null> {
     const producto = await this.prisma.product.findUnique({
       where: { 
-        id,
+        codigo,
       },
       include: {
         productImages: {
@@ -202,30 +152,29 @@ export class ProductsService {
     return productosConImagen[0];
   }
 
-  async update(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
+  async update(codigo: number, updateProductDto: UpdateProductDto): Promise<Product> {
     // Verificar que el producto existe
-    const producto = await this.prisma.product.findUnique({ where: { id } });
+    const producto = await this.prisma.product.findUnique({ where: { codigo } });
     if (!producto) {
-      throw new NotFoundException(`Producto con ID ${id} no encontrado`);
+      throw new NotFoundException(`Producto con código ${codigo} no encontrado`);
     }
 
     return await this.prisma.product.update({
-      where: { id },
+      where: { codigo },
       data: updateProductDto,
     });
   }
 
-  async remove(id: number): Promise<Product> {
+  async remove(codigo: number): Promise<Product> {
     // Verificar que el producto existe
-    const producto = await this.prisma.product.findUnique({ where: { id } });
+    const producto = await this.prisma.product.findUnique({ where: { codigo } });
     if (!producto) {
-      throw new NotFoundException(`Producto con ID ${id} no encontrado`);
+      throw new NotFoundException(`Producto con código ${codigo} no encontrado`);
     }
 
-    // Soft delete: marcar como inactivo en lugar de eliminar
-    return await this.prisma.product.update({
-      where: { id },
-      data: { activo: false },
+    // Eliminación física del producto
+    return await this.prisma.product.delete({
+      where: { codigo },
     });
   }
 }

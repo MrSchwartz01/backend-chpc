@@ -33,29 +33,29 @@ export class ProductsController {
     }
   }
 
-  @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    const producto = await this.productsService.findOne(id);
+  @Get(':codigo')
+  async findOne(@Param('codigo', ParseIntPipe) codigo: number) {
+    const producto = await this.productsService.findOne(codigo);
     if (!producto) {
-      throw new NotFoundException(`Producto con ID ${id} no encontrado`);
+      throw new NotFoundException(`Producto con código ${codigo} no encontrado`);
     }
     return producto;
   }
 
-  @Put(':id')
+  @Put(':codigo')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.VENDEDOR)
   async update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('codigo', ParseIntPipe) codigo: number,
     @Body() updateProductDto: UpdateProductDto,
   ) {
-    return await this.productsService.update(id, updateProductDto);
+    return await this.productsService.update(codigo, updateProductDto);
   }
 
-  @Delete(':id')
+  @Delete(':codigo')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    return await this.productsService.remove(id);
+  async remove(@Param('codigo', ParseIntPipe) codigo: number) {
+    return await this.productsService.remove(codigo);
   }
 }

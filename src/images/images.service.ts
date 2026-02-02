@@ -58,12 +58,12 @@ export class ImagesService {
   async create(createImageDto: CreateImageDto) {
     // Verificar que el producto existe
     const product = await this.prisma.product.findUnique({
-      where: { id: createImageDto.producto_id },
+      where: { codigo: createImageDto.producto_id },
     });
 
     if (!product) {
       throw new NotFoundException(
-        `Producto con ID ${createImageDto.producto_id} no encontrado`,
+        `Producto con código ${createImageDto.producto_id} no encontrado`,
       );
     }
 

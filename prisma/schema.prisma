@@ -85,36 +85,41 @@ model User {
 }
 
 model Product {
-  id             Int     @id @default(autoincrement())
-  nombre_producto String
-  descripcion     String
-  precio          Float
-  stock           Int
-  imagen_url      String
-  marca           String?
-  color           String?
-  categoria       String?  // Agregar campo categoría
-  subcategoria    String?  // Agregar subcategoría opcional
-  modelo          String?  // Modelo del producto
-  sku             String?  @unique // SKU único del producto
-  especificaciones String? @db.Text // Especificaciones técnicas
-  garantia        String?  // Información de garantía
-  activo          Boolean @default(true) // Si el producto está activo
-  destacado       Boolean @default(false) // Si es producto destacado
-  fecha_creacion  DateTime @default(now())
-  fecha_actualizacion DateTime @updatedAt
-  erpId           String? @unique // Mantener para futura integración ERP
+  codigo           Int     @id @map("Código")
+  producto         String? @db.VarChar(512) @map("Producto")
+  marca            String? @db.VarChar(512) @map("Marca")
+  medida           String? @db.VarChar(512) @map("Medida")
+  almacen          String? @db.VarChar(512) @map("Almacen")
+  garantia         String? @db.VarChar(512) @map("Garantia")
+  despiece         String? @db.VarChar(512) @map("Despiece")
+  taller           String? @db.VarChar(512) @map("Taller")
+  despieceGaraje   String? @db.VarChar(512) @map("Despiece Garaje")
+  temporal         String? @db.VarChar(512) @map("Temporal")
+  existenciaTotal  String? @db.VarChar(512) @map("Existencia Total")
+  costoTotal       Float?  @map("Costo Total")
 
   serviceOrders   ServiceOrder[]
   productImages   ProductImage[]
   banners         Banner[]
   promotions      Promotion[]
+  precioUnitario  PrecioUnitario?
 
-  @@map("productos")
-  @@index([categoria])
+  @@map("Product")
   @@index([marca])
-  @@index([activo])
-  @@index([destacado])
+}
+
+model PrecioUnitario {
+  codigo    Int     @id @map("Código")
+  producto  String? @db.VarChar(512) @map("Producto")
+  medida    String? @db.VarChar(512) @map("Medida")
+  precioC   Float?  @map("Precio C")
+  precioB   Float?  @map("Precio B")
+  precioA   Float?  @map("Precio A")
+
+  // Relación 1:1 con Product
+  productRef Product @relation(fields: [codigo], references: [codigo], onDelete: Cascade)
+
+  @@map("Precio_Unitario")
 }
 
 model Banner {
@@ -122,7 +127,7 @@ model Banner {
   titulo      String
   imagen_url  String
   producto_id Int?     @map("producto_id")
-  producto    Product? @relation(fields: [producto_id], references: [id], onDelete: SetNull)
+  producto    Product? @relation(fields: [producto_id], references: [codigo], onDelete: SetNull)
 
   @@map("banners")
   @@index([producto_id])
@@ -206,7 +211,7 @@ model ServiceOrder {
   fecha_actualizacion DateTime           @updatedAt
 
   user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product             Product?           @relation(fields: [productId], references: [id])
+  product             Product?           @relation(fields: [productId], references: [codigo])
 
   @@map("ordenes_servicio")
 }
@@ -262,7 +267,7 @@ model ProductImage {
   version_optimizada Boolean  @default(false)
   fecha_subida       DateTime @default(now())
   
-  producto           Product  @relation(fields: [producto_id], references: [id], onDelete: Cascade)
+  producto           Product  @relation(fields: [producto_id], references: [codigo], onDelete: Cascade)
   
   @@map("imagenes")
   @@index([producto_id])
@@ -280,7 +285,7 @@ model Promotion {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   
-  producto          Product  @relation(fields: [producto_id], references: [id], onDelete: Cascade)
+  producto          Product  @relation(fields: [producto_id], references: [codigo], onDelete: Cascade)
   
   @@map("promociones")
   @@index([producto_id])
