@@ -74,14 +74,14 @@ export class ProductsService {
       if (marca) {
         where.marca = {
           contains: marca,
-          mode: 'insensitive',
+          mode: Prisma.QueryMode.insensitive,
         };
       }
 
       if (almacen) {
         where.almacen = {
           contains: almacen,
-          mode: 'insensitive',
+          mode: Prisma.QueryMode.insensitive,
         };
       }
 
@@ -90,25 +90,25 @@ export class ProductsService {
           {
             producto: {
               contains: search,
-              mode: 'insensitive',
+              mode: Prisma.QueryMode.insensitive,
             },
           },
           {
             marca: {
               contains: search,
-              mode: 'insensitive',
+              mode: Prisma.QueryMode.insensitive,
             },
           },
           {
             medida: {
               contains: search,
-              mode: 'insensitive',
+              mode: Prisma.QueryMode.insensitive,
             },
           },
           {
             almacen: {
               contains: search,
-              mode: 'insensitive',
+              mode: Prisma.QueryMode.insensitive,
             },
           },
           {
