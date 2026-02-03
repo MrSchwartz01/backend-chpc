@@ -18,6 +18,15 @@ export class ProductsController {
     return await this.productsService.create(createProductDto);
   }
 
+  // Endpoint para admin - muestra TODOS los productos sin filtros de stock/precio
+  @Get('admin/todos')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.VENDEDOR)
+  async findAllAdmin(@Query() filters: FilterProductsDto) {
+    console.log('=== PRODUCTS CONTROLLER - findAllAdmin (sin filtros de stock) ===');
+    return await this.productsService.findAllAdmin(filters);
+  }
+
   @Get()
   async findAll(@Query() filters: FilterProductsDto) {
     try {

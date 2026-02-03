@@ -182,6 +182,69 @@ export class ProductsService {
     }
   }
 
+  /**
+   * Método para admin - devuelve TODOS los productos sin filtros de stock/precio
+   */
+  async findAllAdmin(filters: FilterProductsDto): Promise<{ data: Product[]; total: number; page: number; limit: number; totalPages: number }> {
+    const { marca, almacen, search, page = 1, limit } = filters;
+
+    const where: Prisma.ProductWhereInput = {};
+
+    if (marca) {
+      where.marca = {
+        contains: marca,
+        mode: Prisma.QueryMode.insensitive,
+      };
+    }
+
+    if (almacen) {
+      where.almacen = {
+        contains: almacen,
+        mode: Prisma.QueryMode.insensitive,
+      };
+    }
+
+    if (search) {
+      where.OR = [
+        { producto: { contains: search, mode: Prisma.QueryMode.insensitive } },
+        { marca: { contains: search, mode: Prisma.QueryMode.insensitive } },
+        { medida: { contains: search, mode: Prisma.QueryMode.insensitive } },
+        { almacen: { contains: search, mode: Prisma.QueryMode.insensitive } },
+        !isNaN(Number(search)) ? { codigo: Number(search) } : {},
+      ].filter(c => Object.keys(c).length > 0);
+    }
+
+    const total = await this.prisma.product.count({ where });
+
+    const queryOptions: any = {
+      where,
+      orderBy: [{ codigo: 'asc' }],
+      include: {
+        productImages: {
+          orderBy: [{ es_principal: 'desc' }, { orden: 'asc' }],
+        },
+        precioUnitario: true,
+      },
+    };
+
+    if (limit) {
+      queryOptions.skip = (page - 1) * limit;
+      queryOptions.take = limit;
+    }
+
+    const productos = await this.prisma.product.findMany(queryOptions);
+    const result = this.addImagenUrlAndPrecio(productos);
+    const totalPages = limit ? Math.ceil(total / limit) : 1;
+
+    return {
+      data: result,
+      total,
+      page: Number(page),
+      limit: limit || total,
+      totalPages,
+    };
+  }
+
   async findOne(codigo: number): Promise<Product | null> {
     const producto = await this.prisma.product.findUnique({
       where: { 
