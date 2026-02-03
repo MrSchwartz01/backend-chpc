@@ -122,6 +122,18 @@ model PrecioUnitario {
   @@map("Precio_Unitario")
 }
 
+model GarantiaMarca {
+  id        Int      @id @default(autoincrement())
+  marca     String   @unique
+  meses     Int      @default(6)
+  mensaje   String   @db.VarChar(500)
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("garantias_marca")
+}
+
 model Banner {
   id          Int      @id @default(autoincrement())
   titulo      String

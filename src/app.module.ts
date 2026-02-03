@@ -17,6 +17,7 @@ import { PermisosModule } from './permisos/permisos.module';
 import { ImagesModule } from './images/images.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { MailModule } from './mail/mail.module';
+import { GarantiasModule } from './garantias/garantias.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { MailModule } from './mail/mail.module';
     ImagesModule,
     NotificationsModule,
     MailModule,
+    GarantiasModule,
   ],
   controllers: [AppController],
   providers: [AppService],
