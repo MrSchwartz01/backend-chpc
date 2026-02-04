@@ -38,4 +38,36 @@ export class SiteConfigController {
   getLogo() {
     return this.siteConfigService.getLogo();
   }
+
+  // ========== ENDPOINTS DE COLORES ==========
+
+  @Get('colores/tema')
+  @ApiOperation({ summary: 'Obtener los colores de énfasis del sitio' })
+  getColores() {
+    return this.siteConfigService.getColores();
+  }
+
+  @Post('colores/tema')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Actualizar los colores de énfasis del sitio (solo administradores)' })
+  updateColores(@Body() colores: {
+    primary?: string;
+    primaryDark?: string;
+    primaryLight?: string;
+    success?: string;
+    error?: string;
+  }) {
+    return this.siteConfigService.updateColores(colores);
+  }
+
+  @Post('colores/reset')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Restablecer colores a valores por defecto (solo administradores)' })
+  resetColores() {
+    return this.siteConfigService.resetColores();
+  }
 }

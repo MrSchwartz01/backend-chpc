@@ -44,4 +44,75 @@ export class SiteConfigService {
       return { valor: null }; // Si no existe, retornar objeto con valor null
     }
   }
+
+  // ========== CONFIGURACIÓN DE COLORES ==========
+
+  /**
+   * Obtiene todos los colores de énfasis configurados
+   */
+  async getColores() {
+    const coloresDefault = {
+      primary: '#ffa726',
+      primaryDark: '#fb8c00',
+      primaryLight: '#ffb74d',
+      success: '#4caf50',
+      error: '#f44336',
+    };
+
+    try {
+      const config = await this.prisma.siteConfig.findUnique({
+        where: { clave: 'colores_enfasis' },
+      });
+
+      if (config) {
+        return { valor: JSON.parse(config.valor) };
+      }
+      return { valor: coloresDefault };
+    } catch (error) {
+      return { valor: coloresDefault };
+    }
+  }
+
+  /**
+   * Actualiza los colores de énfasis del sitio
+   */
+  async updateColores(colores: {
+    primary?: string;
+    primaryDark?: string;
+    primaryLight?: string;
+    success?: string;
+    error?: string;
+  }) {
+    // Obtener colores actuales para mantener los no modificados
+    const coloresActuales = await this.getColores();
+    const nuevosColores = {
+      ...coloresActuales.valor,
+      ...colores,
+    };
+
+    return this.prisma.siteConfig.upsert({
+      where: { clave: 'colores_enfasis' },
+      update: { valor: JSON.stringify(nuevosColores) },
+      create: { clave: 'colores_enfasis', valor: JSON.stringify(nuevosColores) },
+    });
+  }
+
+  /**
+   * Restablece los colores a los valores por defecto
+   */
+  async resetColores() {
+    const coloresDefault = {
+      primary: '#ffa726',
+      primaryDark: '#fb8c00',
+      primaryLight: '#ffb74d',
+      success: '#4caf50',
+      error: '#f44336',
+    };
+
+    return this.prisma.siteConfig.upsert({
+      where: { clave: 'colores_enfasis' },
+      update: { valor: JSON.stringify(coloresDefault) },
+      create: { clave: 'colores_enfasis', valor: JSON.stringify(coloresDefault) },
+    });
+  }
 }

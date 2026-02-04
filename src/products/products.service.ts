@@ -14,7 +14,7 @@ export class ProductsService {
    */
   private addImagenUrlAndPrecio(productos: any[]): any[] {
     return productos.map(producto => {
-      let imagen_url = '/placeholder.jpg';
+      let imagen_url = '/placeholder_product.jpg';
       
       if (producto.productImages && producto.productImages.length > 0) {
         // Buscar imagen principal o usar la primera
