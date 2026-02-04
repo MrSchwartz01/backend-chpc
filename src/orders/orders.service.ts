@@ -27,8 +27,12 @@ export class OrdersService {
 
     const productIds = dto.items.map((i) => i.productId);
 
+    // Incluir precioUnitario para obtener el precio correcto (precioA)
     const products = await this.prisma.product.findMany({
       where: { codigo: { in: productIds } },
+      include: {
+        precioUnitario: true,
+      },
     });
 
     if (products.length !== productIds.length) {
@@ -40,7 +44,8 @@ export class OrdersService {
 
     const itemsData = dto.items.map((item) => {
       const product = products.find((p) => p.codigo === item.productId)!;
-      const precio = product.costoTotal || 0;
+      // Usar precioA del precioUnitario si está disponible, sino usar costoTotal como respaldo
+      const precio = product.precioUnitario?.precioA ?? product.costoTotal ?? 0;
       const lineTotal = precio * item.cantidad;
       subtotal += lineTotal;
       totalItems += item.cantidad;
