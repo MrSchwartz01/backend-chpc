@@ -1,54 +1,33 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit {
+export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor() {
-    // Configurar URL con parámetros de conexión optimizados para Railway
-    const baseUrl = process.env.DATABASE_URL || '';
-    const hasParams = baseUrl.includes('?');
-    const connectionParams = hasParams 
-      ? '&sslmode=require&connection_limit=1&pool_timeout=20'
-      : '?sslmode=require&connection_limit=1&pool_timeout=20';
-    
-    const optimizedUrl = baseUrl + connectionParams;
+    // Para entornos serverless como Vercel, usar configuración optimizada
+    const isServerless = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
     
     super({
-      datasources: {
-        db: {
-          url: optimizedUrl,
-        },
-      },
       log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
       errorFormat: 'minimal',
     });
 
-    console.log('🔧 Prisma configurado para Railway');
-    console.log('URL con parámetros optimizados:', optimizedUrl.replace(/:[^:@]*@/, ':***@'));
+    console.log('🔧 Prisma configurado para', isServerless ? 'Serverless (Vercel)' : 'Desarrollo');
   }
 
   async onModuleInit() {
     try {
-      console.log('🔌 Conectando a Railway PostgreSQL...');
+      console.log('🔌 Conectando a PostgreSQL...');
       await this.$connect();
       console.log('✅ Conexión establecida exitosamente');
     } catch (error) {
-      console.error('❌ Error inicial de conexión:', error);
-      // Reintentar sin parámetros adicionales
-      try {
-        console.log('🔄 Reintentando con URL base...');
-        await this.$disconnect();
-        await this.$connect();
-        console.log('✅ Reconexión exitosa');
-      } catch (retryError) {
-        console.error('❌ Error definitivo de conexión:', retryError);
-        throw retryError;
-      }
+      console.error('❌ Error de conexión:', error);
+      throw error;
     }
   }
 
-  async $disconnect() {
-    console.log('🔌 Desconectando de Railway...');
-    return super.$disconnect();
+  async onModuleDestroy() {
+    console.log('🔌 Desconectando de PostgreSQL...');
+    await this.$disconnect();
   }
 }
