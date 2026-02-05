@@ -58,6 +58,8 @@ export class ProductsController {
     @Param('codigo', ParseIntPipe) codigo: number,
     @Body() updateProductDto: UpdateProductDto,
   ) {
+    console.log('=== CONTROLLER UPDATE - Codigo:', codigo, '===');
+    console.log('=== CONTROLLER UPDATE - Body:', JSON.stringify(updateProductDto) ,'===');
     return await this.productsService.update(codigo, updateProductDto);
   }
 
@@ -65,6 +67,8 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   async remove(@Param('codigo', ParseIntPipe) codigo: number) {
+    console.log('=== CONTROLLER DELETE - Codigo:', codigo, '===');
+    console.log('=== ATENCIÓN: Se está eliminando un producto ===');
     return await this.productsService.remove(codigo);
   }
 }

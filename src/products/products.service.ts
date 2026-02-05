@@ -269,16 +269,34 @@ export class ProductsService {
   }
 
   async update(codigo: number, updateProductDto: UpdateProductDto): Promise<Product> {
+    console.log('=== PRODUCTS UPDATE - START ===');
+    console.log('Codigo recibido:', codigo, 'Tipo:', typeof codigo);
+    console.log('DTO recibido:', JSON.stringify(updateProductDto, null, 2));
+    
     // Verificar que el producto existe
     const producto = await this.prisma.product.findUnique({ where: { codigo } });
+    console.log('Producto encontrado en DB:', producto ? 'SI' : 'NO');
+    
     if (!producto) {
+      console.log('ERROR: Producto no encontrado');
       throw new NotFoundException(`Producto con código ${codigo} no encontrado`);
     }
 
-    return await this.prisma.product.update({
+    console.log('Producto antes de actualizar:', JSON.stringify(producto, null, 2));
+
+    const productoActualizado = await this.prisma.product.update({
       where: { codigo },
       data: updateProductDto,
     });
+
+    console.log('Producto después de actualizar:', JSON.stringify(productoActualizado, null, 2));
+    
+    // Verificar que sigue existiendo después de la actualización
+    const verificacion = await this.prisma.product.findUnique({ where: { codigo } });
+    console.log('Verificación post-update - Producto existe:', verificacion ? 'SI' : 'NO');
+    console.log('=== PRODUCTS UPDATE - END ===');
+
+    return productoActualizado;
   }
 
   async remove(codigo: number): Promise<Product> {
